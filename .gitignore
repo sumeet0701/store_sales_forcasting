@@ -161,5 +161,7 @@ cython_debug/
 .csv
 Sales_Forecasting_Artifact
 after_fit.csv
-before_time_trainning.csv
+before_time_training.csv
 prepare_Data.csv
+
+Jup_Notebook

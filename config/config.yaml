@@ -7,7 +7,7 @@ training_pipeline_config:
   artifact_dir: Artifact
 
 data_ingestion_config:
-  file_path: C:\Users\Sumeet Maheshwari\Desktop\Store sales Forecasting (2)\Jup_Notebook\Merged_dataset\outlier_clean.csv
+  file_path: C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Jup_Notebook\Merged_dataset\outlier_clean.csv
   file_name: final_data.csv
   raw_data_dir: raw_data
   ingested_dir: ingested_data

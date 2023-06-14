@@ -52,7 +52,7 @@ DATA_VALIDATION_REPORT_PAGE_FILE_NAME_KEY = "report_page_file_name"
 
 FILE_PATH="file_path"
 FILE_NAME="file_name"
-DESTINATION_FOLDER= r"C:\Users\Sumeet Maheshwari\Desktop\end to end project\Store Sales Forcasting using Time series\store-sales-forcasting\cleaned_data"
+DESTINATION_FOLDER= r"C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Jup_Notebook\Merged_dataset\cleaned_data"
 
 
 # Data Validation related variable
