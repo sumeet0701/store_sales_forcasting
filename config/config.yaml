@@ -1,0 +1,59 @@
+schema_config:
+  schema_dir: config
+  schema_file: schema.yaml
+
+training_pipeline_config:
+  pipeline: Sales_Forecasting_Artifact
+  artifact_dir: Artifact
+
+data_ingestion_config:
+  file_path: C:\Users\Sumeet Maheshwari\Desktop\Store sales Forecasting (2)\Jup_Notebook\Merged_dataset\outlier_clean.csv
+  file_name: final_data.csv
+  raw_data_dir: raw_data
+  ingested_dir: ingested_data
+  ingested_train_dir: train
+  ingested_test_dir: test 
+
+data_validation_config:
+  data_validation: data_validation
+  validation_dir: validated_data
+  report_file_name: report.json
+  report_page_file_name: report.html
+  
+
+data_transformation_config:
+  transformed_dir: transformed_data
+  transformed_train_dir: train
+  transformed_test_dir: test
+  preprocessing_dir: preprocessed
+  time_series_data: time_series_data
+  feature_engineering_object_file_name: feat_eng.pkl
+  preprocessed_object_file_name: preprocessed.pkl
+
+
+time_data_transformation_config:
+  time_transformed_dir: transformed_data
+  time_transformed_train_dir: train
+  time_transformed_test_dir: test
+  time_preprocessing_dir: preprocessed
+  time_feature_engineering_object_file_name: feat_eng.pkl
+  time_preprocessed_object_file_name: preprocessed.pkl
+
+
+
+model_trainer_config:
+  trained_model_dir: trained_model
+  model_file_name: model.pkl
+  model_config_dir: config
+  model_config_file_name: model.yaml
+  prediction_rows: 100
+
+
+model_trainer_time_config:
+  trained_model_dir: trained_time_model
+  model_file_name: model.pkl
+  model_config_dir: config
+  model_report_file_name: model.yaml
+  prediction_image: prediction.png
+  time_model_file_name: 'grouped_data.csv'
+  prediction_rows: 100

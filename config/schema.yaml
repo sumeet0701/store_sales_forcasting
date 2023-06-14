@@ -1,0 +1,70 @@
+FileName: final_data.csv
+NumberOfColumns: 21
+ColumnNames:
+  date: object
+  store_nbr: int64
+  family: object
+  sales: float64
+  onpromotion: int64
+  holiday_type: object
+  locale: object
+  locale_name: object
+  description: object
+  transferred: bool
+  oil_price: float64
+  city: object
+  state: object
+  store_type: object
+  cluster: int64
+  transactions: float64
+  year: int64
+  month: int64
+  week: int64
+  quarter: int64
+  day_of_week: object
+numerical_columns:
+- store_nbr
+- sales
+- onpromotion
+- oil_price
+- cluster
+- transactions 
+numerical_columns_without_target:
+- store_nbr
+- onpromotion
+- oil_price
+- cluster
+- transactions 
+categorical_columns:
+- family
+- holiday_type
+- locale
+- locale_name
+- description
+- city
+- state
+- store_type
+- transferred
+handling_categorical_columns:
+- family
+- holiday_type
+- store_type
+date_columns:
+- date
+drop_columns:
+- transferred
+- year
+- month
+- week
+- quarter
+- day_of_week
+- locale
+- locale_name
+- description
+- state
+- city 
+label_encoder_colums:
+- holiday_type
+- store_type
+target_column:
+- sales
