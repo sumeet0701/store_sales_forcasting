@@ -9,6 +9,7 @@ import os
 import re
 from store_sales.logger import logging
 import yaml
+pd.set_option('float_format', '{:f}'.format)
 
 class LabelEncoderTransformer(TransformerMixin):
     def fit(self, X, y=None):
@@ -165,7 +166,7 @@ class BatchPrediction:
         plt.plot(last_few_values.index, last_few_values[target_column], label='Actual')
         plt.plot(last_few_values.index, predicted_values[-100:], label='Predicted')
         plt.xlabel('Time')
-        plt.ylabel('Value')
+        plt.ylabel('Sales')
         plt.title('Time Series Prediction')
         plt.legend()
 
@@ -239,7 +240,7 @@ class BatchPrediction:
         plt.plot(last_few_values.index, last_few_values[target_column], label='Actual')
         plt.plot(last_few_predictions['ds'].values, last_few_predictions['yhat'].values, label='Predicted')
         plt.xlabel('Time')
-        plt.ylabel('Value')
+        plt.ylabel('Sales')
         plt.title('Time Series Prediction')
         plt.legend()
 

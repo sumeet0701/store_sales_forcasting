@@ -21,6 +21,7 @@ from prophet import Prophet
 import numpy as np
 import re   
 import yaml
+pd.set_option('float_format', '{:f}'.format)
 
 class LabelEncoderTransformer(TransformerMixin):
     def fit(self, X, y=None):
@@ -96,7 +97,7 @@ class SarimaModelTrainer:
     def fit_sarima(self, df, target_column, exog_columns=None, order=None, seasonal_order=None, trend='c'):
         # Fit SARIMA model based on helper plots and print the summary.
         data = df[target_column]
-        exog_columns=['onpromotion','holiday_type','oil_price']
+        exog_columns=['onpromotion','holiday_type','store_type','store_nbr','oil_price']
         exog = df[exog_columns]
         
         logging.info(f" Exog Columns : {exog.columns}")
@@ -120,7 +121,7 @@ class SarimaModelTrainer:
 
     def forecast_and_predict(self, df, target_column, model, exog_columns=None, num_days=70):
         last_60_days = df.iloc[-num_days:]
-        exog_columns = ['onpromotion', 'holiday_type', 'oil_price']
+        exog_columns = ['onpromotion', 'holiday_type','store_type','store_nbr', 'oil_price']
         # Extract the exogenous variables for the last 60 days
         exog_data = last_60_days[exog_columns]
 
