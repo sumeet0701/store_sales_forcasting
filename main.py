@@ -14,7 +14,7 @@ def index():
 @app.route('/', methods=['POST'])
 def predict():
     # Load the trained SARIMAX model
-    model_file_path = r'C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Sales_Forecasting_Artifact\Artifact\model_training\2023-06-14-08-57-26\trained_time_model\model.pkl'  # Path to the trained model pickle file
+    model_file_path = r'C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Sales_Forecasting_Artifact\Artifact\model_training\2023-06-15-10-08-06\trained_time_model\model.pkl'  # Path to the trained model pickle file
 
     # Get the uploaded CSV file
     file = request.files['csv_file']
@@ -28,7 +28,7 @@ def predict():
         return render_template('index.html', error='Error reading CSV file: {}'.format(str(e)))
 
     # Extract the column names from the form
-    exog_columns = ['onpromotion', 'holiday_type', 'store_type','store_nbr','oil_price']
+    exog_columns = ['onpromotion', 'holiday_type', 'family','store_type','store_nbr','oil_price']
     target_column = 'sales'
 
     # Perform batch prediction

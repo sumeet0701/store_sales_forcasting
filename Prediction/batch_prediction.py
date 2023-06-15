@@ -5,7 +5,8 @@ import pickle
 from sklearn.base import TransformerMixin
 from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt
-import os 
+import os
+import sys 
 import re
 from store_sales.logger import logging
 import yaml
@@ -50,7 +51,7 @@ class BatchPrediction:
             
             # group 
             self.group_column=['date']
-            self.sum_column=['onpromotion','sales','holiday_type',"store_type","store_nbr"]
+            self.sum_column=['onpromotion','sales','holiday_type',"store_type","store_nbr",'family']
             self.mean_column=['oil_price']
     def get_model_name_from_yaml(self,file_path):
         """
@@ -80,7 +81,6 @@ class BatchPrediction:
     def drop_columns(self,df):
         # List of columns to drop
         columns_to_drop = [
-            "family",
             "locale",
             "locale_name",
             "description",
@@ -138,7 +138,7 @@ class BatchPrediction:
         df['holiday_type'] = df['holiday_type'].astype('category')
         df["store_type"] = df['store_type'].astype('category')
         # Perform label encoding on categorical columns
-        df = label_encode_categorical_columns(df,categorical_columns=['holiday_type','onpromotion','store_type'],target_column='sales')
+        df = label_encode_categorical_columns(df,categorical_columns=['holiday_type','store_type','family'],target_column='sales')
         #df.to_csv("label_encode.csv")
         # group data 
         df_gp=self.group_data(df,
@@ -167,12 +167,13 @@ class BatchPrediction:
         plt.plot(last_few_values.index, predicted_values[-100:], label='Predicted')
         plt.xlabel('Time')
         plt.ylabel('Sales')
+        plt.xticks(rotation = 90)
         plt.title('Time Series Prediction')
         plt.legend()
 
         # Create the batch prediction folder if it doesn't exist
         if not os.path.exists('batch_prediction'):
-            os.makedirs('batch_prediction')
+            os.makedirs('batch_prediction', exist_ok= True)
 
         # Save the plot in the batch prediction folder
         plot_file_path = os.path.join('batch_prediction', 'plot.png')
@@ -199,7 +200,7 @@ class BatchPrediction:
 
         # datatype --> category
         df['holiday_type'] = df['holiday_type'].astype('category')
-        df = label_encode_categorical_columns(df,categorical_columns=['holiday_type','onpromotion','store_type'],target_column='sales')
+        df = label_encode_categorical_columns(df,categorical_columns=['holiday_type','family','store_type'],target_column='sales')
         # Group data
         df_gp = self.group_data(df,
                                 sum_columns=self.sum_column,
