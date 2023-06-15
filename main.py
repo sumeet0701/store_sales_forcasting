@@ -28,7 +28,7 @@ def predict():
         return render_template('index.html', error='Error reading CSV file: {}'.format(str(e)))
 
     # Extract the column names from the form
-    exog_columns = ['onpromotion', 'holiday_type', 'family','store_type','store_nbr','oil_price']
+    exog_columns = ['onpromotion', 'holiday_type', 'family','store_type','store_nbr']
     target_column = 'sales'
 
     # Perform batch prediction
