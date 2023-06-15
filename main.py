@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request
-from Prediction.batch_prediction import BatchPrediction
-import pandas as pd
-import io
+from Prediction.batch_predictions import batch_predictions
+from store_sales.utils.utils import *
 from store_sales.pipeline.training_pipeline import Pipeline
 from store_sales.logger import logging
+from store_sales.constant import *
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+import io
+import os, sys
 
 app = Flask(__name__)
 
@@ -13,42 +19,28 @@ def index():
 
 @app.route('/', methods=['POST'])
 def predict():
-    # Load the trained SARIMAX model
-    model_file_path = r'C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Sales_Forecasting_Artifact\Artifact\model_training\2023-06-15-10-08-06\trained_time_model\model.pkl'  # Path to the trained model pickle file
+    # load the training SARIMAX model
+    model_file_path = r""
 
-    # Get the uploaded CSV file
-    file = request.files['csv_file']
+    #get the uploaded csv file
+    file = request.file['csv_file']
     if not file:
-        return render_template('index.html', error='No CSV file uploaded.')
-
-    # Read the CSV file
+        return render_template('index.html', error ='No csv file was uploaded')
+    
+    # read csv file
     try:
-        data = pd.read_csv(io.StringIO(file.read().decode('utf-8')))
+        logging.info('Reading csv file')
+        data = pd.read_csv(io.StringIO(file.read().decode('utf8')))
     except Exception as e:
-        return render_template('index.html', error='Error reading CSV file: {}'.format(str(e)))
+        return render_template('index.html', error ='Error reading CSV file: {}'.format(str(e)))
 
-    # Extract the column names from the form
-    exog_columns = ['onpromotion', 'holiday_type', 'family','store_type','store_nbr']
-    target_column = 'sales'
+    # reading yaml file using utils helper functions
+    time_series_config = read_yaml_file(file_path= TIME_CONFIG_FILE_PATH)
+    exog_columns =time_series_config[EXOG_COLUMNS]
+    traget_columns =time_series_config[TARGET_COLUMN]
 
-    # Perform batch prediction
-    batch_prediction = BatchPrediction(model_file_path)
-    prediction_plot = batch_prediction.prediction(data, exog_columns, target_column)
+    # dropping unwanted columns
+    drop_col
 
-    return render_template('index.html', prediction=prediction_plot)
 
-@app.route('/train', methods=['POST'])
-def train():
-    try:
-        pipeline = Pipeline()
-        pipeline.run_pipeline()
-
-        return render_template('index.html', message="Training complete")
-
-    except Exception as e:
-        logging.error(f"{e}")
-        error_message = str(e)
-        return render_template('index.html', error=error_message)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+                               

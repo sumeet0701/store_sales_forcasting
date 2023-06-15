@@ -9,6 +9,7 @@ CURRENT_TIME_STAMP = get_current_time_stamp()
 ROOT_DIR = os.getcwd()  #to get current working directory
 CONFIG_DIR = "config"
 CONFIG_FILE_NAME = "config.yaml"
+CONFIG_FILE_KEY = "config"
 CONFIG_FILE_PATH = os.path.join(ROOT_DIR,CONFIG_DIR,CONFIG_FILE_NAME)
 
 TIME_CONFIG_FILE_NAME='time_series.yaml'
@@ -45,15 +46,19 @@ DATA_INGESTION_RAW_DATA_DIR_KEY = "raw_data_dir"
 DATA_INGESTION_INGESTED_DIR_NAME_KEY = "ingested_dir"
 DATA_INGESTION_TRAIN_DIR_KEY = "ingested_train_dir"
 DATA_INGESTION_TEST_DIR_KEY = "ingested_test_dir"
-CONFIG_FILE_KEY = "config"
-DATA_VALIDATION_REPORT_FILE_NAME_KEY = "report_file_name"
-DATA_VALIDATION_REPORT_PAGE_FILE_NAME_KEY = "report_page_file_name"
+
 
 
 FILE_PATH="file_path"
 FILE_NAME="file_name"
 DESTINATION_FOLDER= r"C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Jup_Notebook\Merged_dataset\cleaned_data"
 
+# Database related variables
+DATABASE_CLIENT_URL_KEY = "mongodb://localhost:27017/?readPreference=primary&ssl=false&directConnection=true"
+DATABASE_NAME_KEY = "Rental_Bike_Share_DB"
+DATABASE_COLLECTION_NAME_KEY = "Bike_Data"
+DATABASE_TRAINING_COLLECTION_NAME_KEY = "Training"
+DATABASE_TEST_COLLECTION_NAME_KEY = "Test"
 
 # Data Validation related variable
 DATA_VALIDATION_ARTIFACT_DIR="data_validation"
@@ -62,6 +67,8 @@ DATA_VALIDATION_SCHEMA_FILE_NAME_KEY = "schema_file_name"
 DATA_VALIDATION_SCHEMA_DIR_KEY = "schema_dir"
 DATA_VALIDATION_VALID_DATASET ="validated_data"
 DATA_VALIDATION_TRAIN_FILE = "Train_data"
+DATA_VALIDATION_REPORT_FILE_NAME_KEY = "report_file_name"
+DATA_VALIDATION_REPORT_PAGE_FILE_NAME_KEY = "report_page_file_name"
 
 
 # Data Transformation related variables

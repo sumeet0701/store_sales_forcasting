@@ -1,111 +1,145 @@
-import os
-import sys
-from six.moves import urllib
-import numpy as np
-import shutil
-import pandas as pd
+from ast import expr_context
+from operator import index
 from store_sales.logger import logging
 from store_sales.exception import CustomException
-from store_sales.constant import *
-
-from store_sales.utils.utils import read_yaml_file
-from store_sales.data_access.goog_final import GoogleDriveDownloader
 from store_sales.entity.config_entity import DataIngestionConfig
 from store_sales.entity.artifact_entity import DataIngestionArtifact
-from sklearn.model_selection import train_test_split
+from store_sales.components.dbOperation import MongoDB
+import pandas as pd
+import numpy as np
+import os,sys
+import zipfile
+from six.moves import urllib
 
-pd.options.mode.chained_assignment = None  # Disable warning for setting with copy
-# Set low_memory option to False
-pd.options.mode.use_inf_as_na = False
 
 
 class DataIngestion:
-
-    def __init__(self, data_ingestion_config: DataIngestionConfig):
+    def __init__(self,data_ingestion_config : DataIngestionConfig):
         try:
-            logging.info(f"{'>>'*30}Data Ingestion log started.{'<<'*30} \n\n")
-            self.config_info  = read_yaml_file(file_path=CONFIG_FILE_PATH)
+            logging.info(f"\n{'*'*20} Data Ingestion log started {'*'*20}\n")
             self.data_ingestion_config = data_ingestion_config
 
+            # Creating connection with the DB
+            self.db = MongoDB()
+
         except Exception as e:
-            raise CustomException(e, sys) from e
-    '''
-    def get_data_from_mongo_DB(self) -> str:
+            raise CustomException(e,sys) from e
+
+    def download_data(self):
+        """
+        Downloads the zipped dataset from the given url and save it to the specified path.
+        """
         try:
-            
-            # Raw Data Directory Path
+            # Extracting remote url to download dataset files
+            download_url = self.data_ingestion_config.dataset_download_url
+
+            # folder location to download zipped file
+            tgz_download_dir = self.data_ingestion_config.tgz_download_dir
+
+            if os.path.exists(tgz_download_dir):
+                os.remove(tgz_download_dir)
+            os.makedirs(tgz_download_dir,exist_ok=True)
+
+            #file_name = os.path.basename(download_url)
+            file_name = "Store_sales.zip"
+            tgz_file_path = os.path.join(tgz_download_dir,file_name)
+
+            logging.info(f"Downloading file from: [{download_url}] into : [{tgz_file_path}]")
+            urllib.request.urlretrieve(download_url,tgz_file_path)
+            logging.info(f"File: [{tgz_file_path}] has been downloaded successfully")
+
+            return tgz_file_path
+
+        except Exception as e:
+            raise CustomException(e,sys) from e
+
+    def extract_tgz_file(self,tgz_file_path:str):
+        try:
+            # Folder location to extract the downloaded zipped dataset files
             raw_data_dir = self.data_ingestion_config.raw_data_dir
-            
-            # Make Raw data Directory
-            os.makedirs(raw_data_dir, exist_ok=True)
+            if os.path.exists(raw_data_dir):
+                os.remove(raw_data_dir)
+            os.makedirs(raw_data_dir,exist_ok=True)
 
-            file_name = FILE_NAME
+            logging.info(f"Extracting zipped file : [{tgz_file_path}] into dir: [{raw_data_dir}]")
+            # Extarcting the files from zipped file
+            zip_ref = zipfile.ZipFile(tgz_file_path)
+            zip_ref.extractall(raw_data_dir)
+            zip_ref.close()
 
-            raw_file_path = os.path.join(raw_data_dir, file_name)
-
-            logging.info(
-                f"Downloading file from Mongo DB into :[{raw_file_path}]")
-            
-            data=mongodata()
-            # Storing mongo data ccs file to raw directoy 
-            data.export_collection_as_csv(collection_name=COLLECTION_NAME,database_name=DATABASE_NAME,file_path=raw_file_path)
-            
-            logging.info(
-                f"File :[{raw_file_path}] has been downloaded successfully.")
-            return raw_file_path
+            logging.info("Extraction completed successfully")
 
         except Exception as e:
-            raise CustomException(e, sys) from e
-        
-        
-        
-        '''
-    def get_csv_from_google_drive(self,file_url:list,file_name:list):
-        raw_data_dir = self.data_ingestion_config.raw_data_dir
-        
-        # Make Raw data Directory
-        os.makedirs(raw_data_dir, exist_ok=True)
-        destination_folder = raw_data_dir
-        os.makedirs(destination_folder, exist_ok=True)
+            raise CustomException(e,sys) from e
 
-        downloader = GoogleDriveDownloader(file_url, file_name, destination_folder)
-        downloader.download()
-            
-        return os.path.join(destination_folder,file_name)
-        
-    def initiate_data_ingestion(self):
+    def data_merge_and_split(self):
         try:
-            data_ingestion_info = self.config_info[DATA_INGESTION_CONFIG_KEY]
+            raw_data_dir = self.data_ingestion_config.raw_data_dir  # Location for extracted data files
             
-            file_path=data_ingestion_info[FILE_PATH]
-            file_name=data_ingestion_info[FILE_NAME]
+            file_name = os.listdir(raw_data_dir)[0]
+            data_file_path = os.path.join(raw_data_dir,file_name)
             
-            raw_data_dir=self.data_ingestion_config.raw_data_dir
+            # Creating collection in mongoDb for dumping data
+            self.db.create_and_check_collection()
             
-            # Create the raw_data_dir directory if it doesn't exist
-            os.makedirs(raw_data_dir, exist_ok=True)
+            # Reading each data files and dumping it into DB
+            for file in os.listdir(data_file_path):
+                data = pd.read_csv(os.path.join(data_file_path,file))
+                data_dict = data.to_dict("records")
+                logging.info(f"Inserting file: [{file}] into DB")
+                self.db.insertall(data_dict)
 
-            # Define the destination path
-            destination_path = os.path.join(raw_data_dir, file_name)
+            # fetching the data set from DB
+            logging.info(f"Fetching entire data from DB")
+            dataframe = self.db.fetch_df()
+            dataframe.drop(columns = "_id",inplace=True)
+            logging.info(f"Entire data fetched successfully from DB!!!")
 
-            # Copy the file to the raw_data_dir and rename it
-            shutil.copyfile(file_path, destination_path)
+            # Splitting the dataset into train and test data based on date indexing
+            logging.info("Splitting Dataset into train and test")
+            train_set = dataframe.loc[dataframe["date"] <= '2022-01-31']
+            test_set = dataframe.loc[(dataframe["date"] >= '2022-02-01') & (dataframe["date"] <= '2022-03-31')]
 
-            # Print the success message
-            print("File copied and renamed successfully!")
-            print("Destination file path:", destination_path)
-            message="Data Ingestion complete"
+            logging.info("Inserting new Training Data into DB")
+            self.db.create_and_check_collection(coll_name="Training")
+            self.db.insertall(train_set.to_dict("records"))
+
+            logging.info("Inserting new Test Data into DB")
+            self.db.create_and_check_collection(coll_name="Test")
+            self.db.insertall(test_set.to_dict("records"))
             
-            logging.info("Data Ingestion Artifact")
-            logging.info(f"File Path : {file_path}")
-            logging.info(f"File Name: {file_name}")
-            logging.info(f"File Ingested File Path: {destination_path}")
-            
-            data_ingestion_artifact=DataIngestionArtifact(
-                message=message,
-                ingestion_file_path=destination_path
-                )
-            
+            # Setting paths for train and test data
+            train_file_path = os.path.join(self.data_ingestion_config.ingested_train_dir,"train.csv")
+            test_file_path = os.path.join(self.data_ingestion_config.ingested_test_dir,"test.csv")
+
+            if train_set is not None:
+                os.makedirs(self.data_ingestion_config.ingested_train_dir,exist_ok=True)
+                logging.info(f"Exporting training dataset to file: [{train_file_path}]")
+                train_set.to_csv(train_file_path,index=False)
+
+            if test_set is not None:
+                os.makedirs(self.data_ingestion_config.ingested_test_dir,exist_ok=True)
+                logging.info(f"Exporting test dataset to file: [{test_file_path}]")
+                test_set.to_csv(test_file_path,index=False)
+
+
+            data_ingestion_artifact = DataIngestionArtifact(train_file_path=train_file_path,
+                                                            test_file_path=test_file_path,
+                                                            is_ingested=True,
+                                                            message="Data ingestion completed successfully")
+            logging.info(f"Data Ingestion Artifact: [{data_ingestion_artifact}]")
             return data_ingestion_artifact
         except Exception as e:
-            raise CustomException(e, sys)from e
+            raise CustomException(e,sys) from e
+    
+    
+    def initiate_data_ingestion(self) -> DataIngestionArtifact:
+        try:
+            tgz_file_path = self.download_data()
+            self.extract_tgz_file(tgz_file_path=tgz_file_path)
+            return self.data_merge_and_split()
+        except Exception as e:
+            raise CustomException(e,sys) from e
+    
+    def __del__(self):
+        logging.info(f"\n{'*'*20} Data Ingestion log completed {'*'*20}\n")
