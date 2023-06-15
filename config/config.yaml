@@ -7,12 +7,13 @@ training_pipeline_config:
   artifact_dir: Artifact
 
 data_ingestion_config:
-  file_path: C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\Jup_Notebook\Merged_dataset\outlier_clean.csv
-  file_name: final_data.csv
+  dataset_download_url : https://github.com/sumeet0701/data-dump/blob/main/outlier_clean.zip?raw=true
   raw_data_dir: raw_data
+  tgz_download_dir: tgz_data
   ingested_dir: ingested_data
   ingested_train_dir: train
-  ingested_test_dir: test 
+  ingested_test_dir: test
+
 
 data_validation_config:
   data_validation: data_validation
