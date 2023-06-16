@@ -77,14 +77,14 @@ class DataIngestion:
             raw_data_dir = self.data_ingestion_config.raw_data_dir  # Location for extracted data files
             
             file_name = os.listdir(raw_data_dir)[0]
-            data_file_path = os.path.join(raw_data_dir, file_name)
+            data_file_path = os.path.join(raw_data_dir)
             
             # Creating collection in mongoDb for dumping data
-            self.db.create_and_check_collection()
+            #self.db.create_and_check_collection()
             
             # Reading each data files and dumping it into DB
             for file in os.listdir(data_file_path):
-                data = pd.read_csv(os.path.join(data_file_path))
+                data = pd.read_csv(os.path.join(data_file_path,file))
                 data_dict = data.to_dict("records")
                 logging.info(f"Inserting file: [{file}] into DB")
                 #self.db.insertall(data_dict)
