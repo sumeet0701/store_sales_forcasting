@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request
 from Prediction.batch_prediction import BatchPrediction
+from Prediction.instance_prediction import InstancePrediction
+
 from store_sales.utils.utils import *
 import pandas as pd
 import io
@@ -76,6 +78,10 @@ def train():
         logging.error(f"{e}")
         error_message = str(e)
         return render_template('index.html', error=error_message)
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

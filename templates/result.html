@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Store Sales Forcasting Using Time Series Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+
+        
+    <style>
+        .sales-input {
+            padding-top: 130px;
+            padding-right: 100px;
+            font-weight: bold;
+            width: 100%;
+            background-color: #cce2f5;
+        }
+
+        .file-input {
+            font-weight: bold;
+            width: 40%;
+        }
+
+        .title {
+
+            text-align: center;
+            font-weight: bold;
+            border-radius: 50px;
+
+            font-size: 30px;
+            background-color: #33475b;
+            padding-top: 10px;
+            font-weight: bold;
+            padding-bottom: 10px;
+            color: #ffffff;
+            font-family: 'Lucida Sans';
+        }
+        
+        .class{
+            color: #f5ae0a;
+        }
+        .header2{
+            display: inline;
+            font-size: 35px;
+            color: #120f08;
+            font-weight: bold;
+            padding-left: 260px;
+            font-family: 'Gill Sans MT';
+        }
+        
+        .col{
+            padding-left: 50px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+
+    <div class="title">Store Sales Forcasting Using Time Series Project</div>
+
+    
+    <div class="sales-input">
+        <!-- main row -->
+        <div class="row">
+            <!-- file input column -->
+            <div class="col file-input">
+                <form action="/bulk_predict" method="POST" enctype="multipart/form-data">
+                    <label for="">Upload dataset</label>
+                    <div class="input-group mb-3 my-2">
+                        <input type="file" multiple class="form-control" id="inputGroupFile01" name="files">
+                    </div>
+                    <center>
+                        <div class="d-grid gap-2 col-6 mx-auto">
+                            <button class="btn btn-primary my-2" type="submit">Predict</button>
+                        </div>
+                    </center>
+                </form>
+            </div>
+
+            <!-- user input column -->
+            <div class="col">
+                <!-- Alert Message -->
+                {% with message = get_flashed_messages(with_categories=true) %}
+                {% if message %}
+                {% for category, msg in message %}
+                <div class="message">
+                    <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+                        {{msg}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+                <form action="/single_predict" method="POST">
+                    <!-- 1st row -->
+                    <div class="row">
+                        <div class="col">
+                            <label>Store_Type</label>
+                            <select class="form-select" aria-label="Default select example" name="month">
+                                <option selected>Select Month</option>
+                                <option value="1">A</option>
+                                <option value="2">B</option>
+                                <option value="3">C</option>
+                                <option value="4">D</option>
+                                <option value="5">E</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 2nd row -->
+                    <div class="row my-2">
+                        <div class="col">
+                            <label>Store_Number</label>
+                            <input class="form-control" placeholder="Enter Store Number" type="text" aria-label="default input example"
+                                name="Store Number">
+                        </div>
+                        <div class="col">
+                            <label>Holiday_Types</label>
+                            <select class="form-select" aria-label="Default select example" name="Holiday_Types">
+                                <option selected>Select The Holiday Type</option>
+                                <option value="1">Holiday</option>
+                                <option value="2">Event</option>
+                                <option value="3">Additional</option>
+                                <option value="4">Transfer</option>
+                                <option value="5">Work Day</option>
+                                <option value="6">Bridge</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 6th row -->
+                    <div class="row my-2">
+                        <div class="col">
+                            <label>Oil Price</label>
+                            <input class="form-control" placeholder="Enter The Oil Price " type="text" aria-label="default input example"
+                                name="Oil Price">
+                        </div>
+
+                        <div class="col">
+                            <label>On Promotion</label>
+                            <input class="form-control" placeholder="Enter the On Promotion  " type="text" aria-label="default input example"
+                                name="On Promotion">
+                        </div>
+
+                    </div>
+
+                    <center>
+                        <div class="d-grid gap-2 col-6 mx-auto">
+                            <button class="btn btn-primary my-2" type="submit">Predict</button>
+                        </div>
+                    </center>
+
+                </form>
+                    
+            </div>
+
+            
+        </div>
+
+    </div>
+    
+    
+</body>
+
+</html>

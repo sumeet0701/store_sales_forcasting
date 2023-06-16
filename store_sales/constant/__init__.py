@@ -129,3 +129,7 @@ DROP_COLUMNS='drop_columns'
 
 # Prediction 
 PREDICTION_ROWS='prediction_rows'
+
+# Prediction Related variables
+PREDICTION_DATA_SAVING_FOLDER_KEY = "predicted"
+APP_SECRET_KEY = "any random string"

@@ -28,7 +28,7 @@ model_file_path ="saved_model/model.pkl"
 
 
 # Load the Preprocessor and Time series Model 
-preprocesser = joblib.load("prediction_file/preprocessed.pkl")
+preprocesser = joblib.load("prediction_files/preprocessed.pkl")
 model = joblib.load("saved_model/model.pkl")
 
 # define mapping
@@ -36,7 +36,7 @@ model = joblib.load("saved_model/model.pkl")
 STORE_TYPE  = {'A':1, "B":2, "C":3, "D":4, "E":5}
 HOLIDAY_TYPE ={'Holiday':1, 'Event':2, 'Additional':3, 'Transfer':4, 'Work Day': 5, "Bridge":6}
 
-class instance_prediction:
+class InstancePrediction:
     def __init__(self, store_type, store_nbr, holiday_type, onpromotion, oil_price):
         self.store_type = store_type
         self.store_nbr = store_nbr
