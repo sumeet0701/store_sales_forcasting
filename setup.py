@@ -4,7 +4,7 @@ from typing import List
 PROJECT_NAME = 'Store Sales forcasting using Time series'
 VERSION = '0.0.1'
 AUTHOR = 'Sumeet'
-DESCRIPTION = 'Modular Coding for Sales forcasting using Time series'
+DESCRIPTION = 'Modular Coding for Store Sales forcasting using Time series'
 
 REQUIREMENT_FILE_NAME ="requirements.txt"
 HYPHEN_E_DOT = "-e ."
