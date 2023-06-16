@@ -2,20 +2,19 @@ time_model_file_name: grouped_data.csv
 drop_columns:
 - cluster
 - transactions
+- family
 group_columns:
 - date
 sum_columns:
 - onpromotion
 - holiday_type
 - sales
-- family
 - store_type
 - store_nbr
 mean_columns:
 - oil_price
 label_encode:
 - holiday_type
-- family
 - store_type
 target_column:
 - sales
@@ -24,4 +23,3 @@ exog_columns:
 - holiday_type
 - store_type
 - store_nbr
-

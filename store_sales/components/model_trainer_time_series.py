@@ -21,8 +21,9 @@ from prophet import Prophet
 import numpy as np
 import re   
 import yaml
+import pmdarima as pm
+import pandas as pd
 pd.set_option('float_format', '{:f}'.format)
-
 class LabelEncoderTransformer(TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -48,17 +49,12 @@ def label_encode_categorical_columns(df:pd.DataFrame, categorical_columns):
     df_encoded = df_combined.copy()
     return df_encoded
 
-import pmdarima as pm
-
-
-
-import pandas as pd
 
 def group_data(df, group_columns, sum_columns, mean_columns):
     # Group by the specified columns and calculate the sum and mean
-    df = df.groupby(group_columns)[sum_columns].sum()
+    grouped_df = df.groupby(group_columns)[sum_columns].sum()
     
-    df[mean_columns] = df.groupby(group_columns)[mean_columns].mean()
+    grouped_df[mean_columns] = df.groupby(group_columns)[mean_columns].mean()
 
 
     return df
@@ -97,7 +93,6 @@ class SarimaModelTrainer:
     def fit_sarima(self, df, target_column, exog_columns=None, order=None, seasonal_order=None, trend='c'):
         # Fit SARIMA model based on helper plots and print the summary.
         data = df[target_column]
-        exog_columns=['onpromotion','holiday_type','store_type','family','store_nbr','oil_price']
         exog = df[exog_columns]
         
         logging.info(f" Exog Columns : {exog.columns}")
@@ -121,7 +116,6 @@ class SarimaModelTrainer:
 
     def forecast_and_predict(self, df, target_column, model, exog_columns=None, num_days=70):
         last_60_days = df.iloc[-num_days:]
-        exog_columns = ['onpromotion', 'holiday_type','store_type','store_nbr', 'oil_price']
         # Extract the exogenous variables for the last 60 days
         exog_data = last_60_days[exog_columns]
 
@@ -134,7 +128,7 @@ class SarimaModelTrainer:
         residuals = actual_values - predicted_values_numpy
 
         # Calculate mean squared error
-        mse = np.mean(residuals ** 2)
+        mse = np.mean(residuals**2)
 
         return predicted_values, mse
     
@@ -142,40 +136,51 @@ class SarimaModelTrainer:
         # Plotting actual and predicted values for the last few rows
         plt.plot(df[target_column].tail(num_days), label='Actual')
         plt.plot(predicted_values.tail(num_days).index, predicted_values.tail(num_days), label='Forecast')
-        plt.xlabel("Date")
-        plt.ylabel("Sales")
         plt.legend()
+
         # Rotate x-axis labels by 90 degrees
         plt.xticks(rotation=90)
+
         # Save the plot as an image
         os.makedirs(self.image_directory,exist_ok=True)
         plot_image_path = os.path.join(self.image_directory, image_name)
         plt.savefig(plot_image_path)
+
         # Close the plot to release memory
         plt.close()
+
         return plot_image_path
 
     def train_model(self, df):
+        
         # Accessing column Labels 
         target_column=self.target_column
         exog_columns=self.exog_columns
+        
         logging.info("Model Training Started: SARIMAX with EXOG data")
+
         # Perform auto ARIMA to get the best parameters
-        #order, seasonal_order = self.fit_auto_arima(df, target_column, exog_columns)
-        order=(2, 0, 1)
-        seasonal_order=(0, 1, 1, 7)
+        order, seasonal_order = self.fit_auto_arima(df, target_column, exog_columns)
+        #order=(2, 0, 1)
+        #seasonal_order=(0, 1, 1, 7)
         logging.info("Model trained best Parameters:")
         logging.info(f"Order: {order}")
         logging.info(f"Seasonal order: {seasonal_order}")
 
         # Fit the SARIMA model
         Sarima_model_fit = self.fit_sarima(df, target_column, exog_columns, order, seasonal_order, trend='c')
+
         # Dump summary in the report
         #self.get_sarima_summary(model, self.model_report_path)
+
         # Save prediction image and get predicted values and residuals
         predicted_values, mse = self.forecast_and_predict(df, target_column, Sarima_model_fit, exog_columns)
+        
         # Plot and save Image of Forecast 
         plot_image_path=self.save_image(df, target_column, predicted_values, num_days=70, image_name='Sarima_exog.png')
+        
+        
+        
         return  mse,Sarima_model_fit,plot_image_path
 
 
@@ -240,17 +245,33 @@ class ProphetModel_Exog:
 
         df = df.rename_axis('ds').reset_index()
         df = df.rename(columns={'sales': 'y'})
-        # Set the 'date' column as the index
-        # Reset the index and rename columns
         
+        '''        df.to_csv('prepare_data_0.csv')
+                # Set the 'date' column as the index
+                # Reset the index and rename columns
+                
 
-        exog_columns = self.exog_columns
-        exog_columns=['onpromotion','holiday_type','oil_price','store_type','store_nbr','family']
-        # Select the desired columns
-        df = df[['ds','y','onpromotion','holiday_type','oil_price','store_type','store_nbr','family']]
-        
-        df.to_csv('prepare_Data.csv')
+            
+                # Select the desired columns
+                exog_columns=self.exog_columns
 
+                exog = self.exog_columns
+                date_target = ['y', 'ds']
+
+                df_exog = pd.DataFrame()  # Create an empty DataFrame
+
+                exog = self.exog_columns
+                date_target = ['y', 'ds']
+
+                df_exog = pd.DataFrame()  # Create an empty DataFrame
+
+                for column in exog + tuple(date_target):
+                    if column in df.columns:
+                        df_exog[column] = df[column]
+
+                        
+                df_exog.to_csv('prepare_Data.csv')
+                sys.exit()'''
         return df
 
     def fit_prophet_model(self, data:pd.DataFrame):
@@ -261,15 +282,16 @@ class ProphetModel_Exog:
         
 
         exog_columns=self.exog_columns
+        
         logging.info(f" Adding exlog columns to the model : {exog_columns}")
-        exog_columns=['onpromotion','holiday_type','oil_price','store_type','store_nbr','family']
         # Add exogenous regressors
+        exog_columns = ['onpromotion', 'holiday_type', 'store_nbr', 'store_type']
         for column in exog_columns:
             m.add_regressor(column)
 
         # Fit the model with data
         m.fit(data)
-        data.to_csv('after_fit.csv')
+       # data.to_csv('after_fit.csv')
         
         logging.info(f" Data fit Prophet_Exog_data with columns : {data.columns}")
 
@@ -278,7 +300,7 @@ class ProphetModel_Exog:
     def make_prophet_prediction(self, model, data):
         # Create future dataframe
         future = model.make_future_dataframe(periods=0)
-        exog_columns=['onpromotion','holiday_type','oil_price','store_type','store_nbr','family']
+        exog_columns=self.exog_columns
         # Add exogenous variables to the future dataframe
         for column in exog_columns:
             future[column] = data[column]
@@ -302,8 +324,7 @@ class ProphetModel_Exog:
         plt.fill_between(forecast_tail['ds'], forecast_tail['yhat_lower'], forecast_tail['yhat_upper'],
                         alpha=0.3, label='Confidence Interval')
         plt.xlabel('Date')
-        plt.ylabel('Sales')
-        plt.xticks(rotation = 90)
+        plt.ylabel('Value')
         plt.title('Forecasted Values and Actual Values with Confidence Interval')
         plt.legend()
 
@@ -353,6 +374,11 @@ class ModelTrainer_time:
             
             # Image save file location 
             self.image_directory=self.model_trainer_config.prediction_image
+            
+            #
+            
+            
+            
             # Accessing Model report path 
             self.model_report_path=self.model_trainer_config.model_report
             
@@ -361,8 +387,11 @@ class ModelTrainer_time:
                 # Accessing columns
             self.exog_columns=self.time_config_data[EXOG_COLUMNS]
             self.target_column=self.time_config_data[TARGET_COLUMN]
+            
+            
            # Label encoding columns 
             self.label_encoding_columns=self.time_config_data[LABEL_ENCODE_COLUMNS]
+            
             # Grouping columns 
             self.group_column=self.time_config_data[GROUP_COLUMN]
             self.sum_column =  self.time_config_data[SUM_COLUMN]
@@ -435,7 +464,7 @@ class ModelTrainer_time:
             logging.info("Accessing Feature Trained csv")
             data_df:pd.DataFrame= pd.read_csv(Data_file_path)
             
-            data_df.to_csv('before_time_training.csv')
+            #data_df.to_csv('before_time_training.csv')
             
             target_column_name = 'sales'
            # logging.info("Splitting Input features and Target Feature")
@@ -477,7 +506,7 @@ class ModelTrainer_time:
             
             df_gp.to_csv(grouped_data_file_path)
             
-            
+         
             # Training SARIMA MODEL 
             logging.info("-----------------------------")
             image_directory=self.image_directory=self.model_trainer_config.prediction_image
@@ -493,7 +522,7 @@ class ModelTrainer_time:
 
             
             logging.info(f" Mean Sqaured Error :{mse_Sarima}")
-            
+           
             
              #Training Prophet - without exog 
             
