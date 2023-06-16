@@ -46,18 +46,9 @@ class Feature_Engineering(BaseEstimator, TransformerMixin):
         self.col=all_column
         self.handling_categoical_columns = handling_categoical_columns
         self.time_series_data_path=time_series_data_path
-
-        
-                                ########################################################################
         
         logging.info(f" Numerical Columns , Categorical Columns , Target Column initialised in Feature engineering Pipeline ")
-        
-       ### Data Wrangling 
-       
-            ## Data Modification
-    #           1. Dropping columns 
-    #           2. 
-    
+
     
     def drop_columns(self,df: pd.DataFrame):
         try:
@@ -352,11 +343,6 @@ class DataTransformation:
             self.data_ingestion_artifact = data_ingestion_artifact
             self.data_validation_artifact = data_validation_artifact
             
-                                ############### Accesssing Column Labels #########################
-                                
-                                
-                                #           Schema.yaml -----> DataTransfomation 
-            
             # Schema File path 
             self.schema_file_path = self.data_validation_artifact.schema_file_path
             
@@ -375,7 +361,6 @@ class DataTransformation:
             self.drop_columns=self.schema[DROP_COLUMN_KEY]
             self.handling_categoical_columns=self.schema[HANDLING_CATEGORICAL_COLUMN]
             self.col=self.numerical_column_without_target+self.categorical_columns+self.date_column+self.target_column_name
-                                ########################################################################
         except Exception as e:
             raise CustomException(e,sys) from e
 

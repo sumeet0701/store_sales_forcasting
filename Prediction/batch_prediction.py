@@ -1,115 +1,114 @@
-from store_sales.exception import CustomException
-from store_sales.logger import logging
+import numpy as np
+import pandas as pd
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+import pickle
 from sklearn.base import TransformerMixin
 from sklearn.pipeline import Pipeline
-
-import pandas as pd
-import numpy as np
-import pickle
 import matplotlib.pyplot as plt
-import yaml
-import os
+import os 
 import re
-import sys
-
+from store_sales.logger import logging
+import yaml
 
 class LabelEncoderTransformer(TransformerMixin):
-
-    def __init__(self,X,y=None):
+    def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X):
-        x_encoded = x.copy()
-        for column in x_encoded.columns:
-            x_encoded[column] = x_encoded[column].astype("category").cat.codes
-            return x_encoded
-    
+        X_encoded = X.copy()
+        for column in X_encoded.columns:
+            X_encoded[column] = X_encoded[column].astype('category').cat.codes
+        return X_encoded
 
-def label_encoder_categorical_columns(data: pd.DataFrame, categorical_columns, traget_columns):
-        # create a pipeline with the LabelEncoderTransformer
-        pipeline = Pipeline([
-            ("label_encoder", LabelEncoderTransformer())
-        ])
-        # appling label encoder to categorical columns in the input Dataframe
-        df = data.copy()
-        #Applying label encoder to categorical columns
-        df_encoded = pipeline.fit_transform(df[categorical_columns])
-        # combining encoded categorical columns with other columns in the input Dataframe
-        df_combined = pd.concat([df_encoded, df.drop(categorical_columns), 
-                                 df.drop(categorical_columns,axis = 1)], axis=1)
 
-        #return df_combined
-        return df_combined
+def label_encode_categorical_columns(data: pd.DataFrame, categorical_columns, target_column):
+
+
+    # Create the pipeline with the LabelEncoderTransformer
+    pipeline = Pipeline([
+        ('label_encoder', LabelEncoderTransformer())
+    ])
+
+    # Apply label encoding to categorical columns in the input DataFrame
+    df = data.copy()
+    # Apply label encoding to categorical columns
+    df_encoded = pipeline.fit_transform(df[categorical_columns])
+
+    # Combine encoded categorical columns with other columns
+    df_combined = pd.concat([df_encoded, df.drop(categorical_columns, axis=1)], axis=1)
+
+    return df_combined
 
 
 class BatchPrediction:
-    def __init__(self,model_file,data,
-                 exog_columns, traget_columns,
-                 drop_columns, label_columns,group_columns,sum_columns, mean_columns):
-        # load the trained SARMIAX Model
+    def __init__(self, model_file,data,exog_columns, target_column,
+                drop_columns, label_encode, group_column, sum_column, mean_column):
+        # Load the trained SARIMAX model
         with open(model_file, 'rb') as f:
             self.model = pickle.load(f)
-
-            # exog_columns
-            self.exog_columns =exog_columns
-            # traget_columns
-            self.traget_columns =traget_columns
-            # drop_columns
-            self.drop_columns =drop_columns
-            # label_column
-            self.label_column =label_columns
-
-            #group_column
-            self.group_column =group_columns
-            #sum_column
-            self.sum_column =sum_columns
-            # mean_column
-            self.mean_column =mean_columns
-    
-    def get_model_name_from_yaml(self, file_path):
+                
+            # Exog data 
+            self.exog_columns=exog_columns
+            
+            # Target Columns 
+            self.target_column=target_column
+            
+            # Drop columns 
+            self.drop_columns_list=drop_columns
+            
+            # Label encode 
+            self.label_encode_columns=label_encode
+            
+            
+            # group 
+            self.group_column=group_column
+            self.sum_column=sum_column
+            self.mean_column=mean_column
+    def get_model_name_from_yaml(self,file_path):
         """
-        Extract the model name from a YAML file
+        Extracts the model name from a YAML file.
 
         Args:
-            file_path(str): The path to the YAML file
+            file_path (str): The path to the YAML file.
+
         Returns:
             str: The name of the model.
         """
         try:
-            # reading yaml file
-            with open(file_path, 'r') as f:
-                yaml_data = yaml.safe_load(f)
-            
-            # get the model name from the YAML data
+            # Read the YAML file
+            with open(file_path, 'r') as file:
+                yaml_data = yaml.safe_load(file)
+
+            # Get the model name from the YAML data
             model_name = yaml_data['model_name']
+
             return model_name
-        except  FileNotFoundError:
+
+        except FileNotFoundError:
             print(f"Error: The file '{file_path}' does not exist.")
             return None
-        except Exception as e:
-            raise CustomException(e,sys)
-    
-    def drop_columns(self, df, drop_columns):
-        # list of columns to drop
+
+
+    def drop_columns(self,df,drop_columns):
+        # List of columns to drop
         columns_to_drop = drop_columns
 
-        # drop all the columns from dataframe
-        df.drop(columns =columns_to_drop, inplace = True)
+        # Drop the columns from the DataFrame
+        df = df.drop(columns=columns_to_drop)
+        
+        
+       
+        drop_columns = ['year', 'month', 'week', 'quarter', 'day_of_week']
 
-        drop_columns = ['year', 'month', 'week','quarter','day_of_week']
+        # Check if the columns exist
+        existing_columns = [col for col in drop_columns if col in df.columns]
 
-        # check if the columns exist
-        exist_columns = [col for col in df.columns if col in df.columns]
-
-        # droping existing columns
-        df.drop(columns =exist_columns, inplace = True)
-
-        # return clean dataframe
-        return df
+        # Drop the existing columns
+        df.drop(existing_columns, axis=1, inplace=True)
     
-    def group_data(self, df,group_columns, sum_columns, mean_columns):
+        return df
 
+    def group_data(self,df, group_columns, sum_columns, mean_columns):
         """
         Groups the data in the DataFrame based on the specified group_columns,
         calculates the sum of sum_columns within each group, and calculates
@@ -127,37 +126,33 @@ class BatchPrediction:
         # Group the data and calculate the sum of sum_columns within each group
         df_gp = df.groupby(group_columns)[sum_columns].sum()
 
-        # calculate the mean of mean_columns within each group
-        df_gp[mean_columns] = df.groupby(group_columns)[mean_columns].sum()
-        
-        #return grouped dataframe 
+        # Calculate the mean of mean_columns within each group
+        df_gp[mean_columns] = df.groupby(group_columns)[mean_columns].mean()
+
         return df_gp
-    
-
-    def sarima_predict(self, data):
-        # assceing necessary data
-        exog_columns = self.exog_columns
-        traget_columns = self.traget_columns
-        label_encode_columns = self.label_encode_columns
-
-        df = data.copy()
-
-        # setting Date columns as index 
-        df['data'] = pd.to_datetime(df['date'])
+    def Sarima_predict(self, data):
+        
+        # Accessing necessary Data 
+        exog_columns=self.exog_columns
+        target_column=self.target_column
+        # LAbel encode columns 
+        label_encode_columns=self.label_encode_columns
+        
+        
+        df=data.copy()
+        
+        # Setting Date column as index 
+        df['date'] = pd.to_datetime(df['date'])
         df.set_index('date', inplace=True)
-
-        #droping unwanted columns
-        df = self.drop_columns(df)
+        
+        # Dropping unncessry columns 
+        df=self.drop_columns(df)
         #df.to_csv("After_drop.csv")
-
-        # assuming you have a dataframe called 'df' with a column name 'Holiday_type' and
-        df['holiday_type'] =df['holiday_type'].astype('category')
-
-        #performing Label encoding on categorical columns
+        # Assuming you have a DataFrame called 'df' with a column named 'holiday_type'
+        df['holiday_type'] = df['holiday_type'].astype('category')
+        
         # Perform label encoding on categorical columns
-        df = label_encoder_categorical_columns(df,
-                                               categorical_columns=label_encode_columns,
-                                               target_column='sales')
+        df = label_encode_categorical_columns(df,categorical_columns=label_encode_columns,target_column='sales')
         #df.to_csv("label_encode.csv")
   
         df_gp=self.group_data(df,
@@ -224,9 +219,7 @@ class BatchPrediction:
        # df.to_csv("prophet_data.csv")
 
         # datatype --> category
-        df = label_encode_categorical_columns(df,
-                                              categorical_columns=self.label_encode_columns,
-                                              target_column='sales')
+        df = label_encode_categorical_columns(df,categorical_columns=self.label_encode_columns,target_column='sales')
         # Group data
         df_gp = self.group_data(df,
                                 sum_columns=self.sum_column,
@@ -302,7 +295,7 @@ class BatchPrediction:
         exog_columns=self.exog_columns
         target_column=self.target_column
         model_file = self.model
-        name = self.get_model_name_from_yaml(file_path=r"C:\Users\Sumeet Maheshwari\Desktop\end to end project\store_sales_forcasting\store_sales_forcasting\saved_model\model.pkl")
+        name = self.get_model_name_from_yaml(file_path=r"E:\Ineuron may batch projects\Projects\Store sales Forecasting\saved_models\model.yaml")
         
         if name:
             logging.info(f"Model Name :{name}")
@@ -319,3 +312,6 @@ class BatchPrediction:
                 print("Unsupported model. Cannot perform prediction.")
                 
         return plot_file_path
+    
+    
+    

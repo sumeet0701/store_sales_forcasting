@@ -5,6 +5,7 @@ import pandas as pd
 import io
 from store_sales.pipeline.training_pipeline import Pipeline
 from store_sales.logger import logging
+from demo import demo
 from store_sales.constant import *
 import matplotlib.pyplot as plt
 app = Flask(__name__)
@@ -66,8 +67,8 @@ def predict():
 @app.route('/train', methods=['POST'])
 def train():
     try:
-        pipeline = Pipeline()
-        pipeline.run_pipeline()
+        demo_pipeline = demo()
+        demo_pipeline.main()
 
         return render_template('index.html', message="Training complete")
 

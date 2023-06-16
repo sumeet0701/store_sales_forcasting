@@ -19,6 +19,7 @@ label_encode:
 target_column:
 - sales
 exog_columns:
+- oil_price
 - onpromotion
 - holiday_type
 - store_type
