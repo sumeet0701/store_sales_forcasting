@@ -4,13 +4,13 @@ from store_sales.logger import logging
 from store_sales.exception import CustomException
 from store_sales.entity.config_entity import DataIngestionConfig
 from store_sales.entity.artifact_entity import DataIngestionArtifact
-from store_sales.components.dbOperation import MongoDB
+from store_sales.components.db_operation import MongoDB
 import pandas as pd
 import numpy as np
 import os,sys
 import zipfile
 from six.moves import urllib
-
+from sklearn.model_selection import train_test_split
 
 
 class DataIngestion:
@@ -41,7 +41,7 @@ class DataIngestion:
             os.makedirs(tgz_download_dir,exist_ok=True)
 
             #file_name = os.path.basename(download_url)
-            file_name = "Store_sales.zip"
+            file_name = "store_sales.zip"
             tgz_file_path = os.path.join(tgz_download_dir,file_name)
 
             logging.info(f"Downloading file from: [{download_url}] into : [{tgz_file_path}]")
@@ -77,7 +77,7 @@ class DataIngestion:
             raw_data_dir = self.data_ingestion_config.raw_data_dir  # Location for extracted data files
             
             file_name = os.listdir(raw_data_dir)[0]
-            data_file_path = os.path.join(raw_data_dir,file_name)
+            data_file_path = os.path.join(raw_data_dir)
             
             # Creating collection in mongoDb for dumping data
             self.db.create_and_check_collection()
@@ -87,44 +87,35 @@ class DataIngestion:
                 data = pd.read_csv(os.path.join(data_file_path,file))
                 data_dict = data.to_dict("records")
                 logging.info(f"Inserting file: [{file}] into DB")
-                self.db.insertall(data_dict)
+                #self.db.insertall(data_dict)
 
             # fetching the data set from DB
             logging.info(f"Fetching entire data from DB")
-            dataframe = self.db.fetch_df()
-            dataframe.drop(columns = "_id",inplace=True)
+            #dataframe = self.db.fetch_df()
+            #dataframe.drop(columns = "_id",inplace=True)
             logging.info(f"Entire data fetched successfully from DB!!!")
 
             # Splitting the dataset into train and test data based on date indexing
             logging.info("Splitting Dataset into train and test")
-            train_set = dataframe.loc[dataframe["date"] <= '2022-01-31']
-            test_set = dataframe.loc[(dataframe["date"] >= '2022-02-01') & (dataframe["date"] <= '2022-03-31')]
+            ingested_data = data
+            logging.info(f"{ingested_data.columns}")
 
             logging.info("Inserting new Training Data into DB")
-            self.db.create_and_check_collection(coll_name="Training")
-            self.db.insertall(train_set.to_dict("records"))
+            #self.db.create_and_check_collection(coll_name="Training")
+            #self.db.insertall(ingested_data.to_dict("records"))
 
-            logging.info("Inserting new Test Data into DB")
-            self.db.create_and_check_collection(coll_name="Test")
-            self.db.insertall(test_set.to_dict("records"))
-            
             # Setting paths for train and test data
-            train_file_path = os.path.join(self.data_ingestion_config.ingested_train_dir,"train.csv")
-            test_file_path = os.path.join(self.data_ingestion_config.ingested_test_dir,"test.csv")
+            ingested_data_file_path = os.path.join(self.data_ingestion_config.ingested_data_dir,file_name)
+            #test_file_path = os.path.join(self.data_ingestion_config.ingested_test_dir,file_name)
 
-            if train_set is not None:
-                os.makedirs(self.data_ingestion_config.ingested_train_dir,exist_ok=True)
-                logging.info(f"Exporting training dataset to file: [{train_file_path}]")
-                train_set.to_csv(train_file_path,index=False)
-
-            if test_set is not None:
-                os.makedirs(self.data_ingestion_config.ingested_test_dir,exist_ok=True)
-                logging.info(f"Exporting test dataset to file: [{test_file_path}]")
-                test_set.to_csv(test_file_path,index=False)
+            if ingested_data is not None:
+                os.makedirs(self.data_ingestion_config.ingested_data_dir,exist_ok=True)
+                logging.info(f"Exporting training dataset to file: [{ingested_data_file_path}]")
+                #ingested_data.to_csv(ingested_data,index=False)
 
 
-            data_ingestion_artifact = DataIngestionArtifact(train_file_path=train_file_path,
-                                                            test_file_path=test_file_path,
+
+            data_ingestion_artifact = DataIngestionArtifact(Ingestion_file_path= ingested_data_file_path,
                                                             is_ingested=True,
                                                             message="Data ingestion completed successfully")
             logging.info(f"Data Ingestion Artifact: [{data_ingestion_artifact}]")
