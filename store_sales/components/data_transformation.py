@@ -33,18 +33,10 @@ class Feature_Engineering(BaseEstimator, TransformerMixin):
                  target_columns,drop_columns,date_column,
                  all_column,handling_categoical_columns,
                  time_series_data_path):
-        
         """
         This class applies necessary Feature Engneering 
         """
         logging.info(f"\n{'*'*20} Feature Engneering Started {'*'*20}\n\n")
-        
-
-                                ############### Accesssing Column Labels #########################
-                                
-                                
-                 #   Schema.yaml -----> Data Tranformation ----> Method: Feat Eng Pipeline ---> Class : Feature Eng Pipeline              #
-                                
                                 
         self.numerical_columns = numerical_columns
         self.categorical_columns = categorical_columns
@@ -446,7 +438,7 @@ class DataTransformation:
             validated_file_path = self.data_validation_artifact.validated_file_path
 
             logging.info(f"Loading Data as pandas dataframe.")
-            validated_file_path=os.path.join(validated_file_path,"final_data.csv")
+            validated_file_path=os.path.join(validated_file_path,"outlier_clean.csv")
             file_data = pd.read_csv(validated_file_path)
             
             logging.info(f" Data columns {file_data.columns}")

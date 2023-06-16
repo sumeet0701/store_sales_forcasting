@@ -84,7 +84,7 @@ class DataIngestion:
             
             # Reading each data files and dumping it into DB
             for file in os.listdir(data_file_path):
-                data = pd.read_csv(os.path.join(data_file_path,file))
+                data = pd.read_csv(os.path.join(data_file_path))
                 data_dict = data.to_dict("records")
                 logging.info(f"Inserting file: [{file}] into DB")
                 #self.db.insertall(data_dict)
@@ -111,7 +111,7 @@ class DataIngestion:
             if ingested_data is not None:
                 os.makedirs(self.data_ingestion_config.ingested_data_dir,exist_ok=True)
                 logging.info(f"Exporting training dataset to file: [{ingested_data_file_path}]")
-                #ingested_data.to_csv(ingested_data,index=False)
+                ingested_data.to_csv(ingested_data_file_path,index=False)
 
 
 

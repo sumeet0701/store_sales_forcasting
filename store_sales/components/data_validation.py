@@ -43,10 +43,10 @@ class DataValidation:
             
             # creating instance for row_data_validation
             self.train_data = IngestedDataValidation(
-                                validate_path=self.data_ingestion_artifact.ingestion_file_path, schema_path=self.schema_path)
+                                validate_path=self.data_ingestion_artifact.Ingestion_file_path, schema_path=self.schema_path)
             
             # Data_ingestion_artifact--->Unvalidated train and test file path
-            self.ingested_file_path = self.data_ingestion_artifact.ingestion_file_path
+            self.ingested_file_path = self.data_ingestion_artifact.Ingestion_file_path
 
             # Data_validation_config --> file paths to save validated_data
             self.validated_file_path = self.data_validation_config.file_path
@@ -80,7 +80,7 @@ class DataValidation:
             logging.info("Validation Process Started")
             if self.isFolderPathAvailable() == True:
                 train_filename = os.path.basename(
-                    self.data_ingestion_artifact.ingestion_file_path)
+                    self.data_ingestion_artifact.Ingestion_file_path)
 
                 is_train_filename_validated = self.train_data.validate_filename(
                     file_name=train_filename)
@@ -119,7 +119,7 @@ class DataValidation:
 
     def get_train_test_df(self):
         try:
-            df = pd.read_csv(self.data_ingestion_artifact.ingestion_file_path)
+            df = pd.read_csv(self.data_ingestion_artifact.Ingestion_file_path)
             train_df , test_df = train_test_split(df, test_size= 0.3, random_state= 0)
             return train_df, test_df
         except Exception as e:

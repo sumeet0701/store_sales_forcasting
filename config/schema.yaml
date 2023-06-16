@@ -1,4 +1,4 @@
-FileName: final_data.csv
+FileName: outlier_clean.csv
 NumberOfColumns: 21
 ColumnNames:
   date: object
