@@ -77,7 +77,7 @@ class DataIngestion:
             raw_data_dir = self.data_ingestion_config.raw_data_dir  # Location for extracted data files
             
             file_name = os.listdir(raw_data_dir)[0]
-            data_file_path = os.path.join(raw_data_dir)
+            data_file_path = os.path.join(raw_data_dir, file_name)
             
             # Creating collection in mongoDb for dumping data
             self.db.create_and_check_collection()
