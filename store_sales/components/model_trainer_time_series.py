@@ -31,7 +31,7 @@ class LabelEncoderTransformer(TransformerMixin):
     def transform(self, X):
         X_encoded = X.copy()
         STORE_TYPE  = {'A':0, "B":1, "C":2, "D":3, "E":4}
-        HOLIDAY_TYPE ={'Holiday':3, 'Event':2, 'Additional':0, 'Transfer':4, 'Work Day': 5, "Bridge":1}
+        HOLIDAY_TYPE ={'Holiday':0, 'Event':1, 'Additional':2, 'Transfer':3, 'Work Day': 4, "Bridge":5}
         X_encoded['store_type'] = X_encoded['store_type'].map(STORE_TYPE)
         X_encoded['holiday_type'] = X_encoded['holiday_type'].map(HOLIDAY_TYPE)
         return X_encoded
