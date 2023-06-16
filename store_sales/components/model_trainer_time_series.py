@@ -30,9 +30,12 @@ class LabelEncoderTransformer(TransformerMixin):
 
     def transform(self, X):
         X_encoded = X.copy()
-        for column in X_encoded.columns:
-            X_encoded[column] = X_encoded[column].astype('category').cat.codes
+        STORE_TYPE  = {'A':0, "B":1, "C":2, "D":3, "E":4}
+        HOLIDAY_TYPE ={'Holiday':3, 'Event':2, 'Additional':0, 'Transfer':4, 'Work Day': 5, "Bridge":1}
+        X_encoded['store_type'] = X_encoded['store_type'].map(STORE_TYPE)
+        X_encoded['holiday_type'] = X_encoded['holiday_type'].map(HOLIDAY_TYPE)
         return X_encoded
+
 
 def label_encode_categorical_columns(df:pd.DataFrame, categorical_columns):
     # Create the pipeline with the LabelEncoderTransformer
@@ -47,6 +50,8 @@ def label_encode_categorical_columns(df:pd.DataFrame, categorical_columns):
     df_combined = pd.concat([df_encoded, df.drop(categorical_columns, axis=1)], axis=1)
 
     df_encoded = df_combined.copy()
+    logging.info(f"{df_encoded.info()}")
+    df_encoded.to_csv("after_ecoding.csv")
     return df_encoded
 
 

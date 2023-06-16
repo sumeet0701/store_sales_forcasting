@@ -33,8 +33,8 @@ model = joblib.load("saved_model/model.pkl")
 
 # define mapping
 
-STORE_TYPE  = {'A':1, "B":2, "C":3, "D":4, "E":5}
-HOLIDAY_TYPE ={'Holiday':1, 'Event':2, 'Additional':3, 'Transfer':4, 'Work Day': 5, "Bridge":6}
+STORE_TYPE  = {'A':0, "B":1, "C":2, "D":3, "E":4}
+HOLIDAY_TYPE ={'Holiday':3, 'Event':2, 'Additional':0, 'Transfer':4, 'Work Day': 5, "Bridge":1}
 
 class InstancePrediction:
     def __init__(self, store_type, store_nbr, holiday_type, onpromotion, oil_price):
