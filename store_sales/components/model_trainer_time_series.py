@@ -290,7 +290,7 @@ class ProphetModel_Exog:
         
         logging.info(f" Adding exlog columns to the model : {exog_columns}")
         # Add exogenous regressors
-        exog_columns = ['onpromotion', 'holiday_type', 'store_nbr', 'store_type']
+        exog_columns = ['onpromotion', 'holiday_type', 'store_nbr', 'store_type', 'oil_price']
         for column in exog_columns:
             m.add_regressor(column)
 
@@ -490,9 +490,8 @@ class ModelTrainer_time:
             logging.info(f" Columns : {data_df.columns}")
 
             
-            # Label Encode categorical columns 
+
             #categorical_columns=['store_type', 'store_nbr','onpromotion']
-            df=label_encode_categorical_columns(data_df,categorical_columns=self.label_encoding_columns)
         
             # Grouping data 
             group_columns = self.group_column
@@ -504,13 +503,14 @@ class ModelTrainer_time:
             grouped_data_file_path =os.path.join(self.model_trainer_config.time_Series_grouped_data,self.time_config_data[TIME_SERIES_DATA_FILE_NAME])
             
             #df_gp=group_data(df, group_columns, sum_columns, mean_columns)
-            df_gp = df.groupby(group_columns)[sum_columns].sum()
+            df_gp = data_df.groupby(group_columns)[sum_columns].sum()
 
             # Calculate the mean of 'oil_price' within each date group
-            df_gp[mean_columns] = df.groupby(group_columns)[mean_columns].mean()
+            df_gp[mean_columns] = data_df.groupby(group_columns)[mean_columns].mean()
             
             df_gp.to_csv(grouped_data_file_path)
-            
+
+            df_gp=label_encode_categorical_columns(df_gp,categorical_columns=self.label_encoding_columns)
          
             # Training SARIMA MODEL 
             logging.info("-----------------------------")
