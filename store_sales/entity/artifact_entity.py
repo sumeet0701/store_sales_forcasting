@@ -37,9 +37,6 @@ ModelTrainerArtifact = namedtuple("ModelTrainerArtifact",[
     "message",
     "trained_model_object_file_path"])
 
-ModelEvaluationArtifact = namedtuple("ModelEvaluationArtifact",[
-    "is_model_accepted",
-    "improved_accuracy"])
 
 ModelTrainerTIMEArtifact = namedtuple("ModelTrainerArtifact",[
     "message",

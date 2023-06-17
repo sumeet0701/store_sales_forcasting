@@ -18,6 +18,7 @@ from store_sales.components.data_validation import DataValidation
 from store_sales.components.data_transformation import DataTransformation
 from store_sales.components.model_trainer import ModelTrainer
 from store_sales.components.model_trainer_time_series import ModelTrainer_time
+from store_sales.components.model_evalution_and_pusher import Model_eval_and_Pusher
 from store_sales.constant import *
 
 
@@ -82,6 +83,15 @@ class Pipeline():
         except Exception as e:
             raise CustomException(e,sys) from e  
     
+    def start_model_evaluation_pusher(self,model_trainer_artifact:ModelTrainerArtifact,
+                                ):
+        try:
+            model_eval = Model_eval_and_Pusher(model_trainer_artifact)
+            model_eval_artifact = model_eval.initiate_model_evaluation_and_pusher()
+            return model_eval_artifact
+        except  Exception as e:
+            raise  CustomException(e,sys)
+    
     def run_pipeline(self):
         try:
              #data ingestion
@@ -93,6 +103,6 @@ class Pipeline():
             #model_trainer_artifact = self.start_model_training(data_transformation_artifact=data_transformation_artifact)  
 
             time_model_trainer_artifact = self.start_time_model_training(data_transformation_artifact=data_transformation_artifact)  
-
+            model_pusher_artifact = self.start_model_evaluation_pusher(time_model_trainer_artifact) 
         except Exception as e:
             raise CustomException(e, sys) from e
