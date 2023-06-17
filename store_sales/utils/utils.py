@@ -7,6 +7,8 @@ import numpy as np
 import pymongo
 from store_sales.constant import *
 from store_sales.logger import logging
+import shutil
+import pickle
 
 def write_yaml_file(file_path:str,data:dict=None):
     """
@@ -145,3 +147,64 @@ def save_image(image_path, image):
         print(f"Image saved successfully at {image_path}")
     except Exception as e:
         print(f"Error saving image: {str(e)}")
+
+def copy_image(source_path, destination_path):
+    # Extract the file name from the source path
+    file_name = os.path.basename(source_path)
+
+    # Construct the destination path with the file name
+    destination_file_path = os.path.join(destination_path, file_name)
+
+    # Copy the image file to the destination directory
+    shutil.copyfile(source_path, destination_file_path)
+
+    return destination_file_path
+
+def save_pickle_object(file_path, model):
+    """
+    Save a model object as a pickled file.
+    
+    file_path: str
+        Path to the file where the model will be saved.
+    model: object
+        The model object to be pickled and saved.
+    """
+    try:
+        directory = os.path.dirname(file_path)
+        os.makedirs(directory, exist_ok=True)
+        with open(file_path, 'wb') as file:
+            pickle.dump(model, file)
+    except Exception as e:
+        raise CustomException(e, sys) from e
+
+    
+def load_pickle_object(file_path: str):
+    """
+    Load a pickled object from a file.
+    
+    file_path: str
+        Path to the file containing the pickled object.
+    return: object
+        The unpickled object.
+    """
+    try:
+        with open(file_path, 'rb') as file_obj:
+            return pickle.load(file_obj)
+    except Exception as e:
+        raise CustomException(e, sys) from e
+
+def save_array_to_directory(array: np.array, directory_path: str, file_name: str, extension: str = '.npy'):
+    try:
+        # Create the directory if it doesn't exist
+        os.makedirs(directory_path, exist_ok=True)
+
+        # Add the extension to the file name
+        file_name_with_extension = file_name + extension
+
+        # Generate the file path
+        file_path = os.path.join(directory_path, file_name_with_extension)
+
+        # Save the array to the file path
+        np.save(file_path, array)
+    except Exception as e:
+        CustomException(e,sys)
