@@ -16,10 +16,11 @@ class LabelEncoderTransformer(TransformerMixin):
 
     def transform(self, X):
         X_encoded = X.copy()
-        for column in X_encoded.columns:
-            X_encoded[column] = X_encoded[column].astype('category').cat.codes
+        STORE_TYPE  = {'A':0, "B":1, "C":2, "D":3, "E":4}
+        HOLIDAY_TYPE ={'Holiday':0, 'Event':1, 'Additional':2, 'Transfer':3, 'Work Day': 4, "Bridge":5}
+        X_encoded['store_type'] = X_encoded['store_type'].map(STORE_TYPE)
+        X_encoded['holiday_type'] = X_encoded['holiday_type'].map(HOLIDAY_TYPE)
         return X_encoded
-
 
 def label_encode_categorical_columns(data: pd.DataFrame, categorical_columns, target_column):
 
@@ -159,6 +160,7 @@ class BatchPrediction:
                               sum_columns=self.sum_column,
                               group_columns=self.group_column,
                               mean_columns=self.mean_column)
+        df_gp = label_encode_categorical_columns(df_gp,categorical_columns=label_encode_columns,target_column='sales')
         df_gp.to_csv('grouped.csv')
         
         # Extract the time series data and exogenous variables
@@ -219,13 +221,13 @@ class BatchPrediction:
        # df.to_csv("prophet_data.csv")
 
         # datatype --> category
-        df = label_encode_categorical_columns(df,categorical_columns=self.label_encode_columns,target_column='sales')
         # Group data
         df_gp = self.group_data(df,
                                 sum_columns=self.sum_column,
                                 group_columns=self.group_column,
                                 mean_columns=self.mean_column)
       #  df_gp.to_csv('grouped.csv')
+        df_gp = label_encode_categorical_columns(df_gp,categorical_columns=self.label_encode_columns,target_column='sales')
 
         # Extract the time series data and exogenous variables
         time_series_data = df_gp[target_column]
