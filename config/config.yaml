@@ -32,16 +32,6 @@ data_transformation_config:
   preprocessed_object_file_name: preprocessed.pkl
 
 
-time_data_transformation_config:
-  time_transformed_dir: transformed_data
-  time_transformed_train_dir: train
-  time_transformed_test_dir: test
-  time_preprocessing_dir: preprocessed
-  time_feature_engineering_object_file_name: feat_eng.pkl
-  time_preprocessed_object_file_name: preprocessed.pkl
-
-
-
 model_trainer_config:
   trained_model_dir: trained_model
   model_file_name: model.pkl
